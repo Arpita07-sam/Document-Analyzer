@@ -1,0 +1,101 @@
+File Input
+
+Upload or select a document (PDF, TXT, DOCX, etc.)
+
+Option to paste text directly
+
+Text Extraction
+
+Reads text from files using libraries (e.g., PyPDF2, pdfplumber, or docx)
+
+Handles large files and multiple formats
+
+Word & Character Count
+
+Counts total words, characters (with/without spaces)
+
+Useful for basic stats
+
+Keyword Frequency
+
+Counts how many times each word appears
+
+Option to ignore case and stop words (“the”, “is”, “and”)
+
+Sentence & Paragraph Count
+
+Measures structure of the text
+
+🟡 Intermediate Features
+
+These make the analyzer more insightful:
+
+Top Keywords
+
+Identify the top N most frequent words
+
+Display as a word cloud or bar chart
+
+Sentiment Analysis
+
+Detects tone (Positive / Negative / Neutral)
+
+Uses libraries like TextBlob, VADER, or transformers
+
+Readability Score
+
+Measures how easy it is to read (e.g., Flesch–Kincaid score)
+
+Named Entity Recognition (NER)
+
+Extracts people, places, organizations, dates, etc.
+
+Uses spaCy or similar NLP libraries
+
+Language Detection
+
+Automatically detects the document’s language
+
+🔵 Advanced / AI-Powered Features
+
+For a smart or AI-driven analyzer:
+
+Summarization
+
+Creates concise summaries using NLP or transformer models
+
+Topic Extraction
+
+Finds main topics or themes in the document
+
+Sentiment by Section
+
+Analyzes tone paragraph by paragraph or page by page
+
+Plagiarism Detection
+
+Compares content with other documents or online data
+
+Entity Relationship Mapping
+
+Builds relationships between extracted names/places/etc.
+
+Multilingual Analysis
+
+Supports multiple languages using translation + NLP
+
+Visualization Dashboard
+
+Interactive graphs for sentiment, keyword frequency, etc.
+
+
+Technology has transformed the way we live, work,
+and communicate. From smartphones that connect us instantly
+to people across the globe, to artificial intelligence that assists
+in decision-making and automates routine tasks, innovation continues to
+reshape our daily experiences. Education, healthcare, and business have all been
+deeply impacted, allowing for greater efficiency, accessibility, and creativity.
+However, alongside these benefits come challenges, such as data privacy concerns,
+digital addiction, and the widening gap between those with and without access 
+to technology. Balancing the advantages of technological progress with ethical
+responsibility is one of the key tasks of modern society.
