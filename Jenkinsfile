@@ -1,12 +1,26 @@
-
-
 pipeline {
     agent any
 
     stages {
+
+        stage('Checkout SCM') {
+            steps {
+                git branch: 'main', url: 'https://github.com/Arpita07-sam/Document-Analyzer.git'
+            }
+        }
+
+        stage('Install Dependencies') {
+            steps {
+                bat 'python -m pip install -r requirements.txt'
+            }
+        }
+
         stage('Start Flask App') {
             steps {
+                // Start Flask server in background
                 bat 'start /B python app.py'
+
+                // Wait for Flask to be ready
                 echo 'Waiting for Flask to become available...'
                 powershell '''
                 $retries = 0
@@ -28,24 +42,6 @@ pipeline {
             }
         }
 
-        stage('Checkout SCM') {
-            steps {
-                git branch: 'main', url: 'https://github.com/Arpita07-sam/Document-Analyzer.git'
-            }
-        }
-
-        stage('Install Dependencies') {
-            steps {
-                bat 'python -m pip install -r requirements.txt'
-            }
-        }
-
-        stage('Start Flask App') {
-            steps {
-                bat 'start /B python app.py'  // Windows
-            }
-        }
-
         stage('Run Selenium Tests') {
             steps {
                 bat 'python test_app.py'
@@ -54,7 +50,8 @@ pipeline {
 
         stage('Clean Up') {
             steps {
-                bat 'taskkill /F /IM python.exe'  // Stop Flask server
+                echo 'Stopping Flask app...'
+                bat 'taskkill /F /IM python.exe /T'
             }
         }
     }
