@@ -97,15 +97,22 @@ pipeline {
             steps {
                 powershell '''
                 try {
+                    # Try to make an HTTP request to your Flask server
                     $response = Invoke-WebRequest http://127.0.0.1:5000 -UseBasicParsing -ErrorAction Stop
+                    
+                    # If the above succeeds, Flask is up
                     Write-Host "Flask is up, running Selenium tests..."
+                    
+                    # Run your Selenium test script
                     python test_app.py
                 } catch {
+                    # If the request fails (Flask not ready), do this instead
                     Write-Host "Flask not available, skipping Selenium tests."
                 }
                 '''
             }
         }
+
 
 
         stage('Clean Up') {
