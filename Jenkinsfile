@@ -39,7 +39,7 @@ pipeline {
                 $env:PYTHONUNBUFFERED = "1"
                 $logOut = "$env:WORKSPACE\\flask_stdout.txt"
                 $logErr = "$env:WORKSPACE\\flask_stderr.txt"
-                $scriptPath = "$env:WORKSPACE\\start_flask.py"
+                $scriptPath = "$env:WORKSPACE\\app.py"
 
                 # Start Flask in background
                 $global:flaskProcess = Start-Process "${env:PYTHON_PATH}" -ArgumentList $scriptPath `
