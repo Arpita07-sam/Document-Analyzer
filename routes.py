@@ -171,60 +171,122 @@ def summarize_text(text, n=2):
 def index():
     return render_template("index.html")
 
+# @app.route("/analyze", methods=["GET", "POST"])
+# def analyze():
+#     file = request.files.get("file")
+#     pasted = request.form.get("pasted_text", "").strip()
+#     text = ""
+
+#     if file and file.filename != "":
+#         filename = secure_filename(file.filename)
+#         if not allowed_file(filename):
+#             return "File type not allowed. Use PDF, DOCX, or TXT."
+#         fp = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+#         file.save(fp)
+#         ext = filename.rsplit(".",1)[1].lower()
+#         try:
+#             if ext == "pdf":
+#                 text = extract_text_from_pdf(fp)
+#             elif ext == "docx":
+#                 text = extract_text_from_docx(fp)
+#             else:
+#                 text = extract_text_from_txt(fp)
+#         except Exception as e:
+#             text = f"Error extracting file: {e}"
+#     if pasted:
+#         text = (text + "\n\n" + pasted).strip() if text else pasted
+
+#     if not text:
+#         return redirect(url_for("index"))
+    
+#     summary = summarize_text(text)
+
+#     stats = basic_stats(text)
+#     top_n = 12
+#     top_list, freq = top_frequent_words(text, top_n=top_n)
+#     chart_fn = f"chart_{int(datetime.now().timestamp())}.png"
+#     save_bar_chart(top_list[:10], chart_fn)
+#     entities = extract_entities(text)
+#     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+#     # present mapped entity lists with keys PERSON, ORG, GPE, DATE
+#     mapped = {
+#         "PERSON": entities.get("PERSON", []),
+#         "ORG": entities.get("ORG", []),
+#         "GPE": entities.get("GPE", []),
+#         "DATE": entities.get("DATE", [])
+#     }
+
+#     return render_template("result.html",
+#                                   content = "Uploaded file" if file and file.filename else "Pasted text",
+#                                   stats = stats,
+#                                   top_words = top_list,
+#                                   chart_filename = chart_fn,
+#                                   entities = mapped,
+#                                   ts = ts,
+#                                   summary = summary)
+
 @app.route("/analyze", methods=["GET", "POST"])
 def analyze():
-    file = request.files.get("file")
-    pasted = request.form.get("pasted_text", "").strip()
-    text = ""
+    try:
+        file = request.files.get("file")
+        pasted = request.form.get("pasted_text", "").strip()
+        text = ""
 
-    if file and file.filename != "":
-        filename = secure_filename(file.filename)
-        if not allowed_file(filename):
-            return "File type not allowed. Use PDF, DOCX, or TXT."
-        fp = os.path.join(app.config["UPLOAD_FOLDER"], filename)
-        file.save(fp)
-        ext = filename.rsplit(".",1)[1].lower()
-        try:
-            if ext == "pdf":
-                text = extract_text_from_pdf(fp)
-            elif ext == "docx":
-                text = extract_text_from_docx(fp)
-            else:
-                text = extract_text_from_txt(fp)
-        except Exception as e:
-            text = f"Error extracting file: {e}"
-    if pasted:
-        text = (text + "\n\n" + pasted).strip() if text else pasted
+        if file and file.filename != "":
+            filename = secure_filename(file.filename)
+            if not allowed_file(filename):
+                return "File type not allowed. Use PDF, DOCX, or TXT."
+            fp = os.path.join(app.config["UPLOAD_FOLDER"], filename)
+            file.save(fp)
+            ext = filename.rsplit(".",1)[1].lower()
+            try:
+                if ext == "pdf":
+                    text = extract_text_from_pdf(fp)
+                elif ext == "docx":
+                    text = extract_text_from_docx(fp)
+                else:
+                    text = extract_text_from_txt(fp)
+            except Exception as e:
+                text = f"Error extracting file: {e}"
 
-    if not text:
-        return redirect(url_for("index"))
+        if pasted:
+            text = (text + "\n\n" + pasted).strip() if text else pasted
+
+        if not text:
+            return redirect(url_for("index"))
+
+        # Analysis
+        summary = summarize_text(text)
+        stats = basic_stats(text)
+        top_n = 12
+        top_list, freq = top_frequent_words(text, top_n=top_n)
+        chart_fn = f"chart_{int(datetime.now().timestamp())}.png"
+        save_bar_chart(top_list[:10], chart_fn)
+        entities = extract_entities(text)
+        ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        mapped = {
+            "PERSON": entities.get("PERSON", []),
+            "ORG": entities.get("ORG", []),
+            "GPE": entities.get("GPE", []),
+            "DATE": entities.get("DATE", [])
+        }
+
+        return render_template("result.html",
+                               content = "Uploaded file" if file and file.filename else "Pasted text",
+                               stats = stats,
+                               top_words = top_list,
+                               chart_filename = chart_fn,
+                               entities = mapped,
+                               ts = ts,
+                               summary = summary)
     
-    summary = summarize_text(text)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()  # Prints full error in console
+        return f"Internal Server Error: {str(e)}", 500
 
-    stats = basic_stats(text)
-    top_n = 12
-    top_list, freq = top_frequent_words(text, top_n=top_n)
-    chart_fn = f"chart_{int(datetime.now().timestamp())}.png"
-    save_bar_chart(top_list[:10], chart_fn)
-    entities = extract_entities(text)
-    ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-    # present mapped entity lists with keys PERSON, ORG, GPE, DATE
-    mapped = {
-        "PERSON": entities.get("PERSON", []),
-        "ORG": entities.get("ORG", []),
-        "GPE": entities.get("GPE", []),
-        "DATE": entities.get("DATE", [])
-    }
-
-    return render_template("result.html",
-                                  content = "Uploaded file" if file and file.filename else "Pasted text",
-                                  stats = stats,
-                                  top_words = top_list,
-                                  chart_filename = chart_fn,
-                                  entities = mapped,
-                                  ts = ts,
-                                  summary = summary)
 
 
 
