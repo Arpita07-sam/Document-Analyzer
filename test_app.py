@@ -6,14 +6,27 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.options import Options
 
 class MyAppTest(unittest.TestCase):
 
+    
     def setUp(self):
-        # Setup Chrome browser
-        self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")  # Run Chrome without GUI
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()),
+                                    options=chrome_options)
         self.driver.get("http://127.0.0.1:5000")
-        self.wait = WebDriverWait(self.driver, 10)  # Explicit wait
+        self.wait = WebDriverWait(self.driver, 10)
+
+
+    # def setUp(self):
+    #     # Setup Chrome browser
+    #     self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+    #     self.driver.get("http://127.0.0.1:5000")
+    #     self.wait = WebDriverWait(self.driver, 10)  # Explicit wait
 
     def test_homepage_title(self):
         # Check if the homepage title is correct

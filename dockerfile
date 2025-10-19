@@ -1,22 +1,25 @@
-# Use official Python 3.10 slim image
+# Use official Python slim image
 FROM python:3.10-slim
 
 # Set working directory
 WORKDIR /app
 
-# Copy requirements first (Docker caches this layer if unchanged)
-COPY requirements.txt requirements.txt
+# Copy requirements first for caching
+COPY requirements.txt .
 
-# Install dependencies
+# Upgrade pip and install dependencies
 RUN pip install --upgrade pip && \
-    pip install -r requirements.txt && \
-    python -m nltk.downloader punkt stopwords
+    pip install --no-cache-dir -r requirements.txt
 
-# Copy project files
+# Copy all app files
 COPY . .
 
-# Expose Flask port
+# Expose the port Flask will run on
 EXPOSE 5000
 
-# Start the Flask app
-CMD ["python", "app.py"]
+# Set environment variables
+ENV FLASK_APP=app.py
+ENV FLASK_RUN_HOST=0.0.0.0
+
+# Run Flask
+CMD ["flask", "run"] 
