@@ -1,51 +1,8 @@
-// pipeline {
-//     agent any
-
-//     stages {
-//         stage('Checkout SCM') {
-//             steps {
-//                 git branch: 'main', url: 'https://github.com/Arpita07-sam/Document-Analyzer.git'
-//             }
-//         }
-
-//         stage('Install Dependencies') {
-//             steps {
-//                 bat 'python -m pip install --upgrade pip'
-//                 bat 'python -m pip install -r requirements.txt'
-//             }
-//         }
-
-//         stage('Start Flask App') {
-//             steps {
-//                 // Run the Python script in background
-//                 bat 'start /B python start_flask.py'
-//                 // Wait some extra time to make sure Flask is ready
-//                 bat 'timeout /t 10'
-//             }
-//         }
-
-//         stage('Run Selenium Tests') {
-//             steps {
-//                 bat 'python test_app.py'
-//             }
-//         }
-
-//         stage('Clean Up') {
-//             steps {
-//                 // Kill only the Flask process
-//                 powershell '''
-//                 Get-Process python | Where-Object {$_.Path -like "*start_flask*"} | Stop-Process -Force
-//                 '''
-//             }
-//         }
-//     }
-// }
-
-
 pipeline {
     agent any
 
     environment {
+        PYTHON_PATH = "C:\\Users\\Dell\\AppData\\Local\\Programs\\Python\\Python313\\python.exe"
         FLASK_PORT = "5000"
     }
 
@@ -58,24 +15,32 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                bat 'python -m pip install --upgrade pip'
-                bat 'python -m pip install -r requirements.txt'
+                bat "\"${env.PYTHON_PATH}\" -m pip install --upgrade pip"
+                bat "\"${env.PYTHON_PATH}\" -m pip install -r requirements.txt"
             }
         }
 
         stage('Start Flask App') {
             steps {
                 powershell '''
-                # Start Flask and keep a handle to the process
-                $global:flaskProcess = Start-Process python -ArgumentList "start_flask.py" -PassThru
+                Write-Host "Starting Flask app..."
+                $env:PYTHONUNBUFFERED = "1"
+                $logPath = "$env:WORKSPACE\\flask_log.txt"
+                $scriptPath = "$env:WORKSPACE\\start_flask.py"
 
-                # Wait until Flask responds
+                # Start Flask in background and redirect logs
+                $global:flaskProcess = Start-Process "${env:PYTHON_PATH}" -ArgumentList $scriptPath `
+                    -RedirectStandardOutput $logPath `
+                    -RedirectStandardError $logPath `
+                    -PassThru
+
+                # Wait up to 30 seconds for Flask to respond
                 $retries = 0
-                while ($retries -lt 20) {
+                while ($retries -lt 30) {
                     try {
                         $response = Invoke-WebRequest http://127.0.0.1:${env:FLASK_PORT} -UseBasicParsing -ErrorAction Stop
                         if ($response.StatusCode -eq 200) {
-                            Write-Host "Flask is up!"
+                            Write-Host "✅ Flask is up!"
                             break
                         }
                     } catch {
@@ -84,9 +49,12 @@ pipeline {
                     }
                 }
 
-                if ($retries -ge 20) {
-                    Write-Host "Flask did not start in time!"
-                    Stop-Process $global:flaskProcess.Id
+                if ($retries -ge 30) {
+                    Write-Host "❌ Flask did not start in time. Printing log..."
+                    Get-Content $logPath -Tail 20
+                    if ($global:flaskProcess -ne $null) {
+                        Stop-Process $global:flaskProcess.Id -Force
+                    }
                     exit 1
                 }
                 '''
@@ -96,35 +64,21 @@ pipeline {
         stage('Run Selenium Tests') {
             steps {
                 powershell '''
-                try {
-                    # Try to make an HTTP request to your Flask server
-                    $response = Invoke-WebRequest http://127.0.0.1:5000 -UseBasicParsing -ErrorAction Stop
-                    
-                    # If the above succeeds, Flask is up
-                    Write-Host "Flask is up, running Selenium tests..."
-                    
-                    # Run your Selenium test script
-                    python test_app.py
-                } catch {
-                    # If the request fails (Flask not ready), do this instead
-                    Write-Host "Flask not available, skipping Selenium tests."
-                }
+                Write-Host "Running Selenium tests..."
+                & "${env:PYTHON_PATH}" test_app.py
                 '''
             }
         }
-
-
 
         stage('Clean Up') {
             steps {
                 powershell '''
                 if ($global:flaskProcess -ne $null) {
+                    Write-Host "Stopping Flask..."
                     Stop-Process $global:flaskProcess.Id -Force
-                    Write-Host "Flask process stopped."
                 }
                 '''
             }
         }
     }
 }
-
