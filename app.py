@@ -27,6 +27,9 @@ try:
 except KeyboardInterrupt:
     print("Flask server stopping...")
 
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
+
 # from routes import app  # Import your Flask app
 # from waitress import serve
 

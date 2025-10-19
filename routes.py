@@ -171,7 +171,7 @@ def summarize_text(text, n=2):
 def index():
     return render_template("index.html")
 
-@app.route("/analyze", methods=["POST"])
+@app.route("/analyze", methods=["GET", "POST"])
 def analyze():
     file = request.files.get("file")
     pasted = request.form.get("pasted_text", "").strip()
