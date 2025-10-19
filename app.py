@@ -42,7 +42,7 @@ LOG_ERR = os.path.join(BASE_DIR, "flask_stderr.txt")
 
 def run_app():
     # Jenkins-friendly: no debug, no reloader
-    serve(host="0.0.0.0", port=5000) #debug=False, use_reloader=False, threaded=True)
+    serve(app, host="0.0.0.0", port=5000) #debug=False, use_reloader=False, threaded=True)
 
 # Start Flask in a daemon thread
 flask_thread = threading.Thread(target=run_app, daemon=True)
