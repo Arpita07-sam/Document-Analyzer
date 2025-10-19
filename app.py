@@ -28,6 +28,7 @@
 #     print("Flask server stopping...")
 
 from routes import app  # Import your Flask app
+from waitress import serve
 import threading
 import time
 import requests
@@ -41,7 +42,7 @@ LOG_ERR = os.path.join(BASE_DIR, "flask_stderr.txt")
 
 def run_app():
     # Jenkins-friendly: no debug, no reloader
-    app.run(host="0.0.0.0", port=5000, debug=False, use_reloader=False)
+    serve(host="0.0.0.0", port=5000) #debug=False, use_reloader=False, threaded=True)
 
 # Start Flask in a daemon thread
 flask_thread = threading.Thread(target=run_app, daemon=True)

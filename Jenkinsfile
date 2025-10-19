@@ -49,7 +49,7 @@ pipeline {
 
                 Write-Host "Waiting for Flask to start on port ${env:FLASK_PORT}..."
                 $retries = 0
-                while ($retries -lt 30) {
+                while ($retries -lt 60) {
                     try {
                         $response = Invoke-WebRequest http://127.0.0.1:${env:FLASK_PORT} -UseBasicParsing -ErrorAction Stop
                         if ($response.StatusCode -eq 200) {
