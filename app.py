@@ -29,7 +29,7 @@
 
 from routes import app  # Import your Flask app
 from waitress import serve
-import threading
+
 import time
 import requests
 import sys
@@ -40,13 +40,17 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_OUT = os.path.join(BASE_DIR, "flask_stdout.txt")
 LOG_ERR = os.path.join(BASE_DIR, "flask_stderr.txt")
 
-def run_app():
-    # Jenkins-friendly: no debug, no reloader
-    serve(app, host="0.0.0.0", port=5000) #debug=False, use_reloader=False, threaded=True)
+# def run_app():
+#     # Jenkins-friendly: no debug, no reloader
+#     serve(app, host="0.0.0.0", port=5000) #debug=False, use_reloader=False, threaded=True)
 
-# Start Flask in a daemon thread
-flask_thread = threading.Thread(target=run_app, daemon=True)
-flask_thread.start()
+if __name__ == "__main__":
+    serve(app, host="0.0.0.0", port=5000)
+
+
+# # Start Flask in a daemon thread
+# flask_thread = threading.Thread(target=, daemon=True)
+# flask_thread.start()
 
 # Wait until the server is ready
 server_ready = False
