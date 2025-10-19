@@ -234,5 +234,33 @@ def analyze():
 def static_files(fn):
     return send_from_directory(STATIC_DIR, fn)
 
+from flask import Flask, jsonify
+
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return "Home page working!"
+
+@app.route("/test")
+def test():
+    return "Flask is working!"
+
+@app.route("/health")
+def health():
+    return "OK"
+
+# Optional: show actual error messages in JSON
+@app.errorhandler(Exception)
+def handle_exception(e):
+    return jsonify({"error": str(e)}), 500
+
+
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
+
+# if __name__ == "__main__":
+#     app.run(debug=True)
+
+
