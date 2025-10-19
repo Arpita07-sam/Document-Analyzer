@@ -33,9 +33,22 @@ pipeline {
         }
 
         stage('Start Flask App') {
+            
+
             steps {
                 powershell '''
                 Write-Host "🚀 Starting Flask app..."
+
+                # Activate virtual environment
+                & "$env:WORKON_HOME\\Scripts\\activate"
+
+                # Set environment variables
+                $env:FLASK_APP = "$env:WORKSPACE\\app.py"
+                $env:FLASK_ENV = "development"
+                $env:FLASK_RUN_HOST = "0.0.0.0"
+                $env:FLASK_RUN_PORT = "5000"
+
+
                 $env:PYTHONUNBUFFERED = "1"
                 $logOut = "$env:WORKSPACE\\flask_stdout.txt"
                 $logErr = "$env:WORKSPACE\\flask_stderr.txt"
@@ -49,7 +62,7 @@ pipeline {
 
                 Write-Host "Waiting for Flask to start on port ${env:FLASK_PORT}..."
                 $retries = 0
-                while ($retries -lt 60) {
+                while ($retries -lt 30) {
                     try {
                         $response = Invoke-WebRequest http://127.0.0.1:${env:FLASK_PORT} -UseBasicParsing -ErrorAction Stop
                         if ($response.StatusCode -eq 200) {

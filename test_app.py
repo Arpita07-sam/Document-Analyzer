@@ -54,6 +54,29 @@ class MyAppTest(unittest.TestCase):
         # Close the browser
         self.driver.quit()
 
+    def test_textarea_submit(self):
+    # Locate the textarea
+        text_area = self.wait.until(
+            EC.presence_of_element_located((By.NAME, "pasted_text"))
+        )
+
+        # Enter some text
+        text_area.send_keys("This is a test document.")
+
+        # --- Replace your current button click with this ---
+        analyze_button = self.wait.until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, "button.btn-primary"))
+        )
+
+        # Scroll into view (optional)
+        self.driver.execute_script("arguments[0].scrollIntoView();", analyze_button)
+
+        # Click the button
+        analyze_button.click()
+
+
+
+
 if __name__ == "__main__":
     unittest.main()
 
