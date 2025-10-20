@@ -267,12 +267,15 @@ pipeline {
         }
     }
 
+    
     post {
         always {
             echo "Cleaning up..."
             bat '''
-            for /F "tokens=2" %%a in ('tasklist ^| find "python.exe"') do taskkill /PID %%a /F
-            '''
+            for /F "tokens=2" %%a in ('tasklist ^| find "python.exe"') do (
+                taskkill /PID %%a /F || exit /b 0
+            ) '''
         }
     }
+
 }
