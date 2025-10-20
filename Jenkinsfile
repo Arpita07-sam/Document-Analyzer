@@ -261,6 +261,7 @@ pipeline {
                 %PIP% install --upgrade pip
                 %PIP% install -r requirements.txt
                 %PIP% install selenium
+                %PIP% install webdriver-manager
                 '''
             }
         }
