@@ -271,10 +271,15 @@ pipeline {
     post {
         always {
             echo "Cleaning up..."
-            bat '''
+            bat """
+            @echo off
+            setlocal
+            set ERRORLEVEL=0
             for /F "tokens=2" %%a in ('tasklist ^| find "python.exe"') do (
-                taskkill /PID %%a /F || exit /b 0
-            ) '''
+                taskkill /PID %%a /F >nul 2>&1 || set ERRORLEVEL=0
+            )
+            endlocal
+            """
         }
     }
 
