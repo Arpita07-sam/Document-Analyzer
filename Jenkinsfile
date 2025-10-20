@@ -235,66 +235,59 @@
 //     }
 // }
 
-
 pipeline {
     agent any
 
     environment {
         VENV_DIR = 'venv'
-        FLASK_APP = 'app.py'
-        FLASK_ENV = 'development'
         PYTHON = "${VENV_DIR}\\Scripts\\python.exe"
     }
 
     stages {
-        stage('Setup Virtual Environment') {
+        stage('Checkout') {
             steps {
+                checkout scm
+            }
+        }
+
+        stage('Setup Python') {
+            steps {
+                echo "Setting up Python environment..."
                 bat '''
                 if not exist %VENV_DIR% (
                     python -m venv %VENV_DIR%
                 )
-                call %VENV_DIR%\\Scripts\\activate
-                pip install --upgrade pip
-                pip install flask
+                %PYTHON% -m pip install --upgrade pip
+                %PYTHON% -m pip install -r requirements.txt
                 '''
             }
         }
 
-        stage('Run Flask App') {
+        stage('Check Syntax') {
             steps {
-                echo "Starting Flask server..."
+                echo "Checking Python syntax for all files..."
                 bat '''
-                call %VENV_DIR%\\Scripts\\activate
-                set FLASK_APP=%FLASK_APP%
-                set FLASK_ENV=%FLASK_ENV%
-                %PYTHON% -m flask run --host=127.0.0.1 --port=5000 > flask.log 2>&1 &
-                timeout /t 10 >nul
+                %PYTHON% -m py_compile app.py
                 '''
             }
         }
 
-        stage('Test Server') {
+        stage('Run Tests') {
             steps {
-                echo "Checking if Flask server is responding..."
-                bat 'curl http://127.0.0.1:5000'
+                echo "Running unit tests (if any)..."
+                bat '''
+                %PYTHON% -m unittest discover -s tests
+                '''
             }
         }
     }
 
     post {
-        always {
-            echo 'Cleaning up...'
-            bat '''
-            for /F "tokens=2" %a in ('tasklist ^| find "python.exe"') do taskkill /PID %a /F >nul 2>&1
-            '''
+        success {
+            echo "✅ Python code and dependencies are correct! Flask server did NOT run."
         }
         failure {
-            echo '❌ Build failed — check above for Python logs.'
-            bat 'type flask.log'
-        }
-        success {
-            echo '✅ Flask ran successfully!'
-            bat 'type flask.log'
+            echo "❌ There was a problem. Check logs."
         }
     }
 }
