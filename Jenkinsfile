@@ -240,8 +240,7 @@ pipeline {
     agent any
 
     environment {
-        FLASK_APP = "app.py"
-        FLASK_ENV = "development"
+        PYTHON = "venv\\Scripts\\python.exe"
     }
 
     stages {
@@ -256,9 +255,8 @@ pipeline {
                 echo "Setting up Python environment..."
                 bat '''
                     python -m venv venv
-                    call venv\\Scripts\\activate
-                    python -m pip install --upgrade pip
-                    pip install -r requirements.txt
+                    venv\\Scripts\\python.exe -m pip install --upgrade pip
+                    venv\\Scripts\\python.exe -m pip install -r requirements.txt
                 '''
             }
         }
@@ -267,10 +265,9 @@ pipeline {
             steps {
                 echo "Starting Flask server..."
                 bat '''
-                    call venv\\Scripts\\activate
                     set FLASK_ENV=development
                     set FLASK_APP=app.py
-                    start /B python app.py
+                    start /B venv\\Scripts\\python.exe app.py
                     timeout /t 5 >nul
                     curl http://127.0.0.1:5000
                 '''
@@ -286,13 +283,14 @@ pipeline {
             '''
         }
         success {
-            echo "✅ Flask app ran successfully!"
+            echo "✅ Flask app ran successfully inside Jenkins!"
         }
         failure {
-            echo "❌ Build failed — check the logs above."
+            echo "❌ Build failed — check above for Python logs."
         }
     }
 }
+
 
 
 
