@@ -240,7 +240,6 @@ pipeline {
     agent any
 
     environment {
-        // Set Python path if needed
         FLASK_APP = "app.py"
         FLASK_ENV = "development"
     }
@@ -248,7 +247,6 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Get code from Git or workspace
                 checkout scm
             }
         }
@@ -256,10 +254,9 @@ pipeline {
         stage('Setup Python') {
             steps {
                 echo "Setting up Python environment..."
-                // Install Python & dependencies
-                sh '''
-                    python3 -m venv venv
-                    . venv/bin/activate
+                bat '''
+                    python -m venv venv
+                    call venv\\Scripts\\activate
                     pip install --upgrade pip
                     pip install -r requirements.txt
                 '''
@@ -269,14 +266,13 @@ pipeline {
         stage('Run Flask App') {
             steps {
                 echo "Starting Flask server..."
-                // Run Flask safely in background
-                sh '''
-                    . venv/bin/activate
-                    export FLASK_ENV=development
-                    export FLASK_APP=app.py
-                    python app.py &
-                    sleep 5
-                    curl -f http://127.0.0.1:5000 || (echo "Flask failed to start" && exit 1)
+                bat '''
+                    call venv\\Scripts\\activate
+                    set FLASK_ENV=development
+                    set FLASK_APP=app.py
+                    start /B python app.py
+                    timeout /t 5 >nul
+                    curl http://127.0.0.1:5000
                 '''
             }
         }
@@ -285,15 +281,18 @@ pipeline {
     post {
         always {
             echo "Cleaning up..."
-            sh "pkill -f 'python app.py' || true"
+            bat '''
+                for /f "tokens=2" %%a in ('tasklist ^| find "python.exe"') do taskkill /PID %%a /F >nul 2>&1
+            '''
         }
         success {
             echo "Flask app ran successfully!"
         }
         failure {
-            echo "Build failed — check error logs."
+            echo "Build failed — check the above logs for Python errors."
         }
     }
 }
+
 
 
