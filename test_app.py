@@ -92,6 +92,18 @@ class MyAppTest(unittest.TestCase):
     def test_homepage_title(self):
         self.assertIn("Document Analyzer", self.driver.title)
 
+    # def test_textarea_submit(self):
+    #     text_area = self.wait.until(
+    #         EC.presence_of_element_located((By.NAME, "pasted_text"))
+    #     )
+    #     text_area.send_keys("This is a test document.")
+
+    #     analyze_button = self.wait.until(
+    #         EC.element_to_be_clickable((By.CSS_SELECTOR, "button.btn-primary"))
+    #     )
+    #     self.driver.execute_script("arguments[0].scrollIntoView();", analyze_button)
+    #     analyze_button.click()
+
     def test_textarea_submit(self):
         text_area = self.wait.until(
             EC.presence_of_element_located((By.NAME, "pasted_text"))
@@ -101,8 +113,17 @@ class MyAppTest(unittest.TestCase):
         analyze_button = self.wait.until(
             EC.element_to_be_clickable((By.CSS_SELECTOR, "button.btn-primary"))
         )
+
+        # Scroll into view
         self.driver.execute_script("arguments[0].scrollIntoView();", analyze_button)
-        analyze_button.click()
+
+        # Optional tiny wait
+        import time
+        time.sleep(0.5)
+
+        # Click via JS to avoid intercept issues
+        self.driver.execute_script("arguments[0].click();", analyze_button)
+
 
     def tearDown(self):
         self.driver.quit()
