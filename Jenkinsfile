@@ -241,6 +241,7 @@ pipeline {
     environment {
         VENV_DIR = 'venv'
         PYTHON = "${VENV_DIR}\\Scripts\\python.exe"
+        PIP = "${VENV_DIR}\\Scripts\\pip.exe"
     }
 
     stages {
@@ -257,42 +258,29 @@ pipeline {
                 if not exist %VENV_DIR% (
                     python -m venv %VENV_DIR%
                 )
-                %PYTHON% -m pip install --upgrade pip
-                %PYTHON% -m pip install -r requirements.txt
-                '''
-            }
-        }
-
-        stage('Check Syntax') {
-            steps {
-                echo "Checking Python syntax for all files..."
-                bat '''
-                %PYTHON% -m py_compile app.py
+                %PIP% install --upgrade pip
+                %PIP% install -r requirements.txt
+                %PIP% install selenium
                 '''
             }
         }
 
         stage('Run Selenium Test') {
             steps {
-                echo "Running Selenium test..."
+                echo "Running Selenium test_app.py..."
                 bat '''
                 %PYTHON% test_app.py
                 '''
             }
         }
-
     }
 
     post {
         success {
-            echo "✅ Python code and dependencies are correct! Flask server did NOT run."
+            echo '✅ Pipeline finished successfully!'
         }
         failure {
-            echo "❌ There was a problem. Check logs."
+            echo '❌ Pipeline failed — check Selenium test logs above.'
         }
     }
 }
-
-
-
-
