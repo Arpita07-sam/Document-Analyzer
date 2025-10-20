@@ -240,23 +240,22 @@ pipeline {
     agent any
 
     environment {
-        PYTHON = "venv\\Scripts\\python.exe"
+        VENV_DIR = 'venv'
+        FLASK_APP = 'app.py'
+        FLASK_ENV = 'development'
+        PYTHON = "${VENV_DIR}\\Scripts\\python.exe"
     }
 
     stages {
-        stage('Checkout') {
+        stage('Setup Virtual Environment') {
             steps {
-                checkout scm
-            }
-        }
-
-        stage('Setup Python') {
-            steps {
-                echo "Setting up Python environment..."
                 bat '''
-                    python -m venv venv
-                    venv\\Scripts\\python.exe -m pip install --upgrade pip
-                    venv\\Scripts\\python.exe -m pip install -r requirements.txt
+                if not exist %VENV_DIR% (
+                    python -m venv %VENV_DIR%
+                )
+                call %VENV_DIR%\\Scripts\\activate
+                pip install --upgrade pip
+                pip install flask
                 '''
             }
         }
@@ -265,28 +264,37 @@ pipeline {
             steps {
                 echo "Starting Flask server..."
                 bat '''
-                    set FLASK_ENV=development
-                    set FLASK_APP=app.py
-                    start /B venv\\Scripts\\python.exe app.py
-                    timeout /t 5 >nul
-                    curl http://127.0.0.1:5000
+                call %VENV_DIR%\\Scripts\\activate
+                set FLASK_APP=%FLASK_APP%
+                set FLASK_ENV=%FLASK_ENV%
+                %PYTHON% -m flask run --host=127.0.0.1 --port=5000 > flask.log 2>&1 &
+                timeout /t 10 >nul
                 '''
+            }
+        }
+
+        stage('Test Server') {
+            steps {
+                echo "Checking if Flask server is responding..."
+                bat 'curl http://127.0.0.1:5000'
             }
         }
     }
 
     post {
         always {
-            echo "Cleaning up..."
+            echo 'Cleaning up...'
             bat '''
-                for /f "tokens=2" %%a in ('tasklist ^| find "python.exe"') do taskkill /PID %%a /F >nul 2>&1
+            for /F "tokens=2" %a in ('tasklist ^| find "python.exe"') do taskkill /PID %a /F >nul 2>&1
             '''
         }
-        success {
-            echo "✅ Flask app ran successfully inside Jenkins!"
-        }
         failure {
-            echo "❌ Build failed — check above for Python logs."
+            echo '❌ Build failed — check above for Python logs.'
+            bat 'type flask.log'
+        }
+        success {
+            echo '✅ Flask ran successfully!'
+            bat 'type flask.log'
         }
     }
 }
