@@ -272,14 +272,15 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
+        stage('Run Selenium Test') {
             steps {
-                echo "Running unit tests (if any)..."
+                echo "Running Selenium test..."
                 bat '''
-                %PYTHON% -m unittest discover -s tests
+                %PYTHON% test_app.py
                 '''
             }
         }
+
     }
 
     post {
