@@ -257,7 +257,7 @@ pipeline {
                 bat '''
                     python -m venv venv
                     call venv\\Scripts\\activate
-                    pip install --upgrade pip
+                    python -m pip install --upgrade pip
                     pip install -r requirements.txt
                 '''
             }
@@ -286,10 +286,10 @@ pipeline {
             '''
         }
         success {
-            echo "Flask app ran successfully!"
+            echo "✅ Flask app ran successfully!"
         }
         failure {
-            echo "Build failed — check the above logs for Python errors."
+            echo "❌ Build failed — check the logs above."
         }
     }
 }
