@@ -40,9 +40,7 @@ nltk.download("stopwords", quiet=True)
 
 app = Flask(__name__)
 
-# ----------------------------
-# Routes
-# ----------------------------
+
 @app.route("/", methods=["GET", "POST"])
 def home():
     if request.method == "POST":
@@ -51,8 +49,7 @@ def home():
             if not text:
                 return "No text provided", 400
 
-            # --- Example processing ---
-            # Replace this with your actual analysis logic
+            
             result = text.upper()  # simple placeholder
             return render_template("index.html", result=result)
 
@@ -61,7 +58,7 @@ def home():
             print(traceback.format_exc())
             return f"Internal Server Error: {str(e)}", 500
 
-    # GET request
+    
     return render_template("index.html")
 
 
