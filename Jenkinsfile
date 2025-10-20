@@ -239,36 +239,27 @@ pipeline {
     agent any
 
     environment {
-        VENV_DIR = 'venv'
-        PYTHON = "${VENV_DIR}\\Scripts\\python.exe"
-        PIP = "${VENV_DIR}\\Scripts\\pip.exe"
+        PYTHON = "venv\\Scripts\\python.exe"
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
         stage('Setup Python') {
             steps {
                 echo "Setting up Python environment..."
                 bat '''
-                if not exist %VENV_DIR% (
-                    python -m venv %VENV_DIR%
+                if not exist venv (
+                    python -m venv venv
                 )
-                %PIP% install --upgrade pip
-                %PIP% install -r requirements.txt
-                %PIP% install selenium
-                %PIP% install webdriver-manager
+                venv\\Scripts\\pip.exe install --upgrade pip
+                venv\\Scripts\\pip.exe install -r requirements.txt
+                venv\\Scripts\\pip.exe install selenium webdriver-manager
                 '''
             }
         }
 
-        stage('Run Selenium Test') {
+        stage('Run Selenium Tests') {
             steps {
-                echo "Running Selenium test_app.py..."
+                echo "Running Selenium tests..."
                 bat '''
                 %PYTHON% test_app.py
                 '''
@@ -277,11 +268,11 @@ pipeline {
     }
 
     post {
-        success {
-            echo '✅ Pipeline finished successfully!'
-        }
-        failure {
-            echo '❌ Pipeline failed — check Selenium test logs above.'
+        always {
+            echo "Cleaning up..."
+            bat '''
+            for /F "tokens=2" %%a in ('tasklist ^| find "python.exe"') do taskkill /PID %%a /F
+            '''
         }
     }
 }
